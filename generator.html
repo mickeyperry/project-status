@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Grossman North - Link Generator</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0d1117 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+            padding-top: env(safe-area-inset-top, 20px);
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #64748b;
+        }
+
+        .logo h1 span {
+            color: #f97316;
+        }
+
+        .logo p {
+            color: #475569;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            background: #0d1117;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #f97316;
+        }
+
+        input[type="text"]::placeholder {
+            color: #475569;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        .slider-value {
+            position: absolute;
+            right: 0;
+            top: -30px;
+            background: #f97316;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #334155;
+            outline: none;
+            -webkit-appearance: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: #475569;
+            font-size: 0.75rem;
+        }
+
+        .preview-box {
+            background: #0d1117;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            word-break: break-all;
+            font-size: 0.85rem;
+            color: #64748b;
+            min-height: 60px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-copy {
+            background: #334155;
+            color: #fff;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: #fff;
+        }
+
+        .btn-share:disabled {
+            opacity: 0.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #22c55e;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .install-prompt p {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .install-prompt button {
+            flex: none;
+            padding: 10px 20px;
+        }
+
+        .install-close {
+            background: transparent;
+            color: #64748b;
+            padding: 8px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>GROSSMAN <span>NORTH</span></h1>
+            <p>Project Status Link Generator</p>
+        </div>
+
+        <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="projectName" placeholder="e.g. Nike Summer Campaign">
+        </div>
+
+        <div class="form-group">
+            <label>Progress</label>
+            <div class="slider-container">
+                <span class="slider-value" id="sliderValue">50%</span>
+                <input type="range" id="progress" min="0" max="100" value="50">
+                <div class="progress-labels">
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Generated Link</label>
+            <div class="preview-box" id="preview">Enter a project name above...</div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-copy" id="copyBtn">Copy</button>
+            <button class="btn-share" id="shareBtn">Share</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Link copied!</div>
+
+    <div class="install-prompt" id="installPrompt">
+        <p>Add to home screen for quick access</p>
+        <button class="btn-share" id="installBtn">Install</button>
+        <button class="install-close" id="closeInstall">&times;</button>
+    </div>
+
+    <script>
+        const projectNameInput = document.getElementById('projectName');
+        const progressSlider = document.getElementById('progress');
+        const sliderValue = document.getElementById('sliderValue');
+        const preview = document.getElementById('preview');
+        const copyBtn = document.getElementById('copyBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const toast = document.getElementById('toast');
+
+        const baseUrl = 'https://mickeyperry.github.io/project-status/';
+
+        function updatePreview() {
+            const name = projectNameInput.value.trim();
+            const progress = progressSlider.value;
+            sliderValue.textContent = progress + '%';
+
+            if (!name) {
+                preview.textContent = baseUrl + '?progress=' + progress;
+                return;
+            }
+
+            const encodedName = encodeURIComponent(name);
+            preview.textContent = baseUrl + '?project=' + encodedName + '&progress=' + progress;
+        }
+
+        function getLink() {
+            return preview.textContent;
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Copy to clipboard
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(getLink());
+                showToast('Link copied!');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = getLink();
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('Link copied!');
+            }
+        });
+
+        // Share via native share
+        shareBtn.addEventListener('click', async () => {
+            const projectName = projectNameInput.value.trim() || 'Project';
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Project Status - ' + projectName,
+                        text: 'Check the progress of ' + projectName,
+                        url: getLink()
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        showToast('Share failed');
+                    }
+                }
+            } else {
+                // Fallback: copy to clipboard
+                await navigator.clipboard.writeText(getLink());
+                showToast('Link copied! (Share not supported)');
+            }
+        });
+
+        // Check if share is supported
+        if (!navigator.share) {
+            shareBtn.textContent = 'Copy & Share';
+        }
+
+        // Event listeners
+        projectNameInput.addEventListener('input', updatePreview);
+        progressSlider.addEventListener('input', updatePreview);
+
+        // Initial preview
+        updatePreview();
+
+        // PWA Install prompt
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const closeInstall = document.getElementById('closeInstall');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'flex';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installPrompt.style.display = 'none';
+            }
+        });
+
+        closeInstall.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
