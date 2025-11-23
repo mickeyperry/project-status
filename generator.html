@@ -228,35 +228,114 @@
             font-size: 1.2rem;
         }
 
-        .snap-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
+        .timeline-track {
+            position: relative;
+            height: 60px;
+            margin-top: 20px;
         }
 
-        .snap-btn {
-            flex: 0 0 auto;
-            padding: 8px 14px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            border: 1px solid #334155;
-            border-radius: 20px;
-            background: #1e293b;
-            color: #94a3b8;
+        .timeline-line {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+        }
+
+        .timeline-progress {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            border-radius: 2px;
+            transition: width 0.2s ease;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+        }
+
+        .timeline-point {
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%);
             cursor: pointer;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             transition: all 0.2s;
         }
 
-        .snap-btn:hover {
-            border-color: #f97316;
-            color: #f97316;
+        .timeline-point:hover .point-dot {
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.6);
         }
 
-        .snap-btn.active {
-            background: linear-gradient(135deg, #f97316, #fb923c);
+        .point-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 3px solid #475569;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .point-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #475569;
+            transition: all 0.2s;
+        }
+
+        .timeline-point.passed .point-dot,
+        .timeline-point.active .point-dot {
             border-color: #f97316;
-            color: #fff;
+            background: #1a1a2e;
+        }
+
+        .timeline-point.passed .point-dot::before {
+            background: #f97316;
+        }
+
+        .timeline-point.active .point-dot {
+            border-color: #fbbf24;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+            transform: scale(1.2);
+        }
+
+        .timeline-point.active .point-dot::before {
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            width: 8px;
+            height: 8px;
+        }
+
+        .point-label {
+            margin-top: 8px;
+            font-size: 0.65rem;
+            color: #475569;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .timeline-point.passed .point-label,
+        .timeline-point.active .point-label {
+            color: #94a3b8;
+        }
+
+        .timeline-point.active .point-label {
+            color: #f97316;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -282,13 +361,33 @@
                     <span>50%</span>
                     <span>100%</span>
                 </div>
-                <div class="snap-buttons">
-                    <button type="button" class="snap-btn" data-progress="20">Editing</button>
-                    <button type="button" class="snap-btn" data-progress="40">Online</button>
-                    <button type="button" class="snap-btn" data-progress="60">VFX</button>
-                    <button type="button" class="snap-btn" data-progress="80">Sound</button>
-                    <button type="button" class="snap-btn" data-progress="90">Color</button>
-                    <button type="button" class="snap-btn" data-progress="100">Final</button>
+                <div class="timeline-track">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-progress" id="timelineProgress"></div>
+                    <div class="timeline-point" data-progress="20" style="left: 20%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">Editing</span>
+                    </div>
+                    <div class="timeline-point" data-progress="40" style="left: 40%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">Online</span>
+                    </div>
+                    <div class="timeline-point" data-progress="60" style="left: 60%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">VFX</span>
+                    </div>
+                    <div class="timeline-point" data-progress="80" style="left: 80%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">Sound</span>
+                    </div>
+                    <div class="timeline-point" data-progress="90" style="left: 90%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">Color</span>
+                    </div>
+                    <div class="timeline-point" data-progress="100" style="left: 100%">
+                        <div class="point-dot"></div>
+                        <span class="point-label">Final</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -396,32 +495,44 @@
         projectNameInput.addEventListener('input', updatePreview);
         progressSlider.addEventListener('input', () => {
             updatePreview();
-            updateSnapButtons();
+            updateTimeline();
         });
 
-        // Snap buttons functionality
-        const snapButtons = document.querySelectorAll('.snap-btn');
+        // Timeline functionality
+        const timelinePoints = document.querySelectorAll('.timeline-point');
+        const timelineProgress = document.getElementById('timelineProgress');
 
-        function updateSnapButtons() {
+        function updateTimeline() {
             const currentProgress = parseInt(progressSlider.value);
-            snapButtons.forEach(btn => {
-                const btnProgress = parseInt(btn.dataset.progress);
-                btn.classList.toggle('active', btnProgress === currentProgress);
+
+            // Update progress bar
+            timelineProgress.style.width = currentProgress + '%';
+
+            // Update points
+            timelinePoints.forEach(point => {
+                const pointProgress = parseInt(point.dataset.progress);
+                point.classList.remove('passed', 'active');
+
+                if (currentProgress > pointProgress) {
+                    point.classList.add('passed');
+                } else if (currentProgress === pointProgress) {
+                    point.classList.add('active');
+                }
             });
         }
 
-        snapButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const progress = btn.dataset.progress;
+        timelinePoints.forEach(point => {
+            point.addEventListener('click', () => {
+                const progress = point.dataset.progress;
                 progressSlider.value = progress;
                 updatePreview();
-                updateSnapButtons();
+                updateTimeline();
             });
         });
 
         // Initial preview
         updatePreview();
-        updateSnapButtons();
+        updateTimeline();
 
         // PWA Install prompt
         let deferredPrompt;
