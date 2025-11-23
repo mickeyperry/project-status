@@ -227,6 +227,37 @@
             padding: 8px;
             font-size: 1.2rem;
         }
+
+        .snap-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .snap-btn {
+            flex: 0 0 auto;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            background: #1e293b;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .snap-btn:hover {
+            border-color: #f97316;
+            color: #f97316;
+        }
+
+        .snap-btn.active {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            border-color: #f97316;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -250,6 +281,14 @@
                     <span>0%</span>
                     <span>50%</span>
                     <span>100%</span>
+                </div>
+                <div class="snap-buttons">
+                    <button type="button" class="snap-btn" data-progress="20">Editing</button>
+                    <button type="button" class="snap-btn" data-progress="40">Online</button>
+                    <button type="button" class="snap-btn" data-progress="60">VFX</button>
+                    <button type="button" class="snap-btn" data-progress="80">Sound</button>
+                    <button type="button" class="snap-btn" data-progress="90">Color</button>
+                    <button type="button" class="snap-btn" data-progress="100">Final</button>
                 </div>
             </div>
         </div>
@@ -355,10 +394,34 @@
 
         // Event listeners
         projectNameInput.addEventListener('input', updatePreview);
-        progressSlider.addEventListener('input', updatePreview);
+        progressSlider.addEventListener('input', () => {
+            updatePreview();
+            updateSnapButtons();
+        });
+
+        // Snap buttons functionality
+        const snapButtons = document.querySelectorAll('.snap-btn');
+
+        function updateSnapButtons() {
+            const currentProgress = parseInt(progressSlider.value);
+            snapButtons.forEach(btn => {
+                const btnProgress = parseInt(btn.dataset.progress);
+                btn.classList.toggle('active', btnProgress === currentProgress);
+            });
+        }
+
+        snapButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const progress = btn.dataset.progress;
+                progressSlider.value = progress;
+                updatePreview();
+                updateSnapButtons();
+            });
+        });
 
         // Initial preview
         updatePreview();
+        updateSnapButtons();
 
         // PWA Install prompt
         let deferredPrompt;
