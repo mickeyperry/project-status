@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Status | Grossman North</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0d1117 100%);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        /* Floating film strips */
+        .film-strip {
+            position: fixed;
+            width: 60px;
+            height: 200px;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.02) 0px,
+                rgba(255, 255, 255, 0.02) 15px,
+                transparent 15px,
+                transparent 20px
+            );
+            border-left: 8px solid rgba(255, 255, 255, 0.03);
+            border-right: 8px solid rgba(255, 255, 255, 0.03);
+            opacity: 0.5;
+            animation: floatFilm 20s ease-in-out infinite;
+        }
+
+        .film-strip:nth-child(1) { left: 5%; top: 10%; animation-delay: 0s; }
+        .film-strip:nth-child(2) { right: 8%; top: 60%; animation-delay: -5s; }
+        .film-strip:nth-child(3) { left: 85%; top: 20%; animation-delay: -10s; }
+
+        @keyframes floatFilm {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #64748b;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .logo span {
+            color: #f97316;
+        }
+
+        .project-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+            padding: 8px 20px;
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 30px;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .project-name:empty {
+            display: none;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-text {
+            color: #64748b;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .status-text .magic {
+            color: #f97316;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            width: 700px;
+            max-width: 90vw;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            position: relative;
+            overflow: visible;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .progress-bar:hover {
+            transform: scaleY(1.5);
+            box-shadow: 0 0 30px rgba(249, 115, 22, 0.2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c, #fbbf24);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            position: relative;
+            animation: gradientMove 3s ease infinite;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .progress-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), 0 0 50px rgba(251, 191, 36, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 16px;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), 0 0 50px rgba(251, 191, 36, 0.4);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(249, 115, 22, 1), 0 0 70px rgba(251, 191, 36, 0.6);
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        .milestones {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding: 0 5px;
+        }
+
+        .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #475569;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .milestone.active {
+            color: #f97316;
+        }
+
+        .milestone-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .milestone.active .milestone-icon {
+            background: rgba(249, 115, 22, 0.15);
+            border-color: rgba(249, 115, 22, 0.3);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+        }
+
+        .milestone-label {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Particle styles - animated via JS for smooth physics */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 24px;
+            z-index: 1000;
+            will-change: transform, opacity;
+        }
+
+        .click-hint {
+            color: #475569;
+            font-size: 0.85rem;
+            margin-top: 50px;
+            font-weight: 300;
+        }
+
+        .click-hint span {
+            color: #f97316;
+            cursor: pointer;
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(249, 115, 22, 0.4);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 30px;
+            color: #334155;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+        }
+
+        .coffee-message {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="film-strip"></div>
+    <div class="film-strip"></div>
+    <div class="film-strip"></div>
+
+    <div class="container">
+        <div class="logo">Grossman <span>North</span></div>
+
+        <div class="project-name" id="projectName"></div>
+        <h1>Your Project is Cooking</h1>
+        <p class="status-text">Our pixels are working overtime. <span class="magic" id="statusMessage">Magic in progress.</span></p>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="progress-indicator" id="indicator">🎬</div>
+            </div>
+
+            <div class="milestones">
+                <div class="milestone active" data-progress="0">
+                    <div class="milestone-icon">📥</div>
+                    <span class="milestone-label">Received</span>
+                </div>
+                <div class="milestone" data-progress="20">
+                    <div class="milestone-icon">✂️</div>
+                    <span class="milestone-label">Editing</span>
+                </div>
+                <div class="milestone" data-progress="40">
+                    <div class="milestone-icon">✨</div>
+                    <span class="milestone-label">VFX</span>
+                </div>
+                <div class="milestone" data-progress="60">
+                    <div class="milestone-icon">🎨</div>
+                    <span class="milestone-label">Color</span>
+                </div>
+                <div class="milestone" data-progress="80">
+                    <div class="milestone-icon">🔊</div>
+                    <span class="milestone-label">Sound</span>
+                </div>
+                <div class="milestone" data-progress="100">
+                    <div class="milestone-icon">🚀</div>
+                    <span class="milestone-label">Delivered</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="coffee-message">"We promise it's worth the wait. Grab a coffee."</p>
+
+        <p class="click-hint">Feeling impatient? <span id="clickMe">Click the bar</span> to send good vibes</p>
+    </div>
+
+    <div class="footer">POST PRODUCTION STUDIO</div>
+
+    <script>
+        // Read URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectName = urlParams.get('project');
+        const urlProgress = urlParams.get('progress');
+
+        // Set progress: from URL, or random between 25-75%
+        const targetProgress = urlProgress ? Math.min(100, Math.max(0, parseInt(urlProgress))) : Math.floor(Math.random() * 50) + 25;
+
+        const progressFill = document.getElementById('progressFill');
+        const indicator = document.getElementById('indicator');
+        const progressBar = document.getElementById('progressBar');
+        const milestones = document.querySelectorAll('.milestone');
+        const projectNameEl = document.getElementById('projectName');
+        const statusMessageEl = document.getElementById('statusMessage');
+
+        // Set project name if provided
+        if (projectName) {
+            projectNameEl.textContent = projectName;
+            document.title = `${projectName} | Grossman North`;
+        }
+
+        // Dynamic status messages based on progress
+        const statusMessages = [
+            { max: 20, text: "Just getting started..." },
+            { max: 35, text: "Cutting and shaping..." },
+            { max: 50, text: "Adding the magic..." },
+            { max: 65, text: "Colors are popping..." },
+            { max: 80, text: "Sound is pumping..." },
+            { max: 95, text: "Final touches..." },
+            { max: 100, text: "Almost there!" }
+        ];
+
+        function getStatusMessage(progress) {
+            for (const status of statusMessages) {
+                if (progress <= status.max) return status.text;
+            }
+            return "Magic in progress.";
+        }
+
+        // Milestone emojis for indicator
+        const milestoneEmojis = ['📥', '✂️', '✨', '🎨', '🔊', '🚀'];
+
+        // Set initial progress
+        function setProgress(percent) {
+            progressFill.style.width = percent + '%';
+            indicator.style.left = percent + '%';
+
+            // Update milestones and indicator emoji
+            let currentMilestone = 0;
+            milestones.forEach((milestone, index) => {
+                const milestoneProgress = parseInt(milestone.dataset.progress);
+                if (milestoneProgress <= percent) {
+                    milestone.classList.add('active');
+                    currentMilestone = index;
+                } else {
+                    milestone.classList.remove('active');
+                }
+            });
+
+            // Update indicator emoji
+            indicator.textContent = milestoneEmojis[currentMilestone];
+
+            // Update status message
+            statusMessageEl.textContent = getStatusMessage(percent);
+        }
+
+        // Animate to target progress on load
+        setTimeout(() => {
+            setProgress(targetProgress);
+        }, 500);
+
+        // Physics-based particle explosion with real gravity
+        function createParticles(x, y) {
+            const particleCount = 35;
+            const gravity = 0.3; // Gravity acceleration
+            const friction = 0.99; // Air resistance
+            const duration = 3000; // Total animation time in ms
+
+            // Heavy on thumbs up, with some flair
+            const emojis = [
+                '👍', '👍', '👍', '👍', '👍',
+                '👍🏻', '👍🏼', '👍🏽', '👍🏾', '👍🏿',
+                '🎬', '✨', '⭐', '🔥', '💫'
+            ];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.style.fontSize = (28 + Math.random() * 28) + 'px';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+
+                document.body.appendChild(particle);
+
+                // Initial velocity - burst outward and upward
+                const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+                const power = 8 + Math.random() * 12;
+                let vx = Math.cos(angle) * power;
+                let vy = Math.sin(angle) * power - (8 + Math.random() * 6); // Upward bias
+                let rotation = 0;
+                let rotationSpeed = (Math.random() - 0.5) * 15;
+
+                let posX = 0;
+                let posY = 0;
+                let opacity = 1;
+                let scale = 0.5;
+
+                const startTime = performance.now();
+
+                function animate(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = elapsed / duration;
+
+                    if (progress >= 1) {
+                        particle.remove();
+                        return;
+                    }
+
+                    // Apply physics
+                    vy += gravity; // Gravity pulls down
+                    vx *= friction; // Air resistance
+                    vy *= friction;
+
+                    posX += vx;
+                    posY += vy;
+                    rotation += rotationSpeed;
+                    rotationSpeed *= 0.98; // Rotation slows down
+
+                    // Scale: pop up quickly, then stay
+                    if (progress < 0.1) {
+                        scale = 0.5 + (progress / 0.1) * 0.7; // Scale up to 1.2
+                    } else if (progress < 0.2) {
+                        scale = 1.2 - ((progress - 0.1) / 0.1) * 0.2; // Settle to 1.0
+                    } else {
+                        scale = 1;
+                    }
+
+                    // Fade out in the last 40%
+                    if (progress > 0.6) {
+                        opacity = 1 - ((progress - 0.6) / 0.4);
+                    }
+
+                    particle.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg) scale(${scale})`;
+                    particle.style.opacity = opacity;
+
+                    requestAnimationFrame(animate);
+                }
+
+                // Stagger start slightly for organic feel
+                setTimeout(() => {
+                    requestAnimationFrame(animate);
+                }, Math.random() * 50);
+            }
+        }
+
+        // Create ripple effect
+        function createRipple(e, element) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+
+            element.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        // Click handlers
+        progressBar.addEventListener('click', (e) => {
+            createParticles(e.clientX, e.clientY);
+            createRipple(e, progressBar);
+        });
+
+        indicator.addEventListener('click', (e) => {
+            e.stopPropagation();
+            createParticles(e.clientX, e.clientY);
+        });
+
+        document.getElementById('clickMe').addEventListener('click', () => {
+            const rect = progressBar.getBoundingClientRect();
+            const x = rect.left + rect.width * (targetProgress / 100);
+            const y = rect.top + rect.height / 2;
+            createParticles(x, y);
+        });
+    </script>
+</body>
+</html>
