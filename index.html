@@ -357,13 +357,14 @@
     <div class="footer">POST PRODUCTION STUDIO</div>
 
     <script>
+        const SHEETS_API = 'https://script.google.com/macros/s/AKfycbxMsVgJk-dQC5YsJwf3BbPsh6wJW7y8-BkSvo56WZyczC7gjHxjXWNqcfjs_HvA3usR/exec';
+
         // Read URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const projectName = urlParams.get('project');
         const urlProgress = urlParams.get('progress');
 
-        // Set progress: from URL, or random between 25-75%
-        const targetProgress = urlProgress ? Math.min(100, Math.max(0, parseInt(urlProgress))) : Math.floor(Math.random() * 50) + 25;
+        let targetProgress = 0;
 
         const progressFill = document.getElementById('progressFill');
         const indicator = document.getElementById('indicator');
@@ -372,10 +373,38 @@
         const projectNameEl = document.getElementById('projectName');
         const statusMessageEl = document.getElementById('statusMessage');
 
+        // Load project from Google Sheets
+        async function loadProjectFromSheets(projectId) {
+            try {
+                const response = await fetch(SHEETS_API + '?action=get&project=' + encodeURIComponent(projectId));
+                const data = await response.json();
+                if (data.success) {
+                    targetProgress = parseInt(data.progress) || 0;
+                    projectNameEl.textContent = data.project;
+                    document.title = `${data.project} | Grossman North`;
+                    setProgress(targetProgress);
+                    return true;
+                }
+            } catch (err) {
+                console.log('Could not load from sheets, using URL params');
+            }
+            return false;
+        }
+
         // Set project name if provided
         if (projectName) {
             projectNameEl.textContent = projectName;
             document.title = `${projectName} | Grossman North`;
+            // Try to load from Google Sheets first
+            loadProjectFromSheets(projectName).then(loaded => {
+                if (!loaded && urlProgress) {
+                    targetProgress = Math.min(100, Math.max(0, parseInt(urlProgress)));
+                    setTimeout(() => setProgress(targetProgress), 500);
+                }
+            });
+        } else if (urlProgress) {
+            targetProgress = Math.min(100, Math.max(0, parseInt(urlProgress)));
+            setTimeout(() => setProgress(targetProgress), 500);
         }
 
         // Dynamic status messages based on progress
@@ -423,10 +452,6 @@
             statusMessageEl.textContent = getStatusMessage(percent);
         }
 
-        // Animate to target progress on load
-        setTimeout(() => {
-            setProgress(targetProgress);
-        }, 500);
 
         // Physics-based particle explosion with real gravity
         function createParticles(x, y) {
