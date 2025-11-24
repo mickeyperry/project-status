@@ -27,8 +27,10 @@
             align-items: center;
             background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0d1117 100%);
             font-family: 'Inter', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
+            padding: 40px 0;
         }
 
         /* Animated background grid */
@@ -480,11 +482,125 @@
         .review-button:active {
             transform: translateY(0);
         }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 5px 25px rgba(34, 197, 94, 0.5);
+            z-index: 100;
+            animation: notificationPulse 2s ease-in-out infinite;
+            transition: transform 0.2s;
+        }
+
+        .notification-badge:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-badge .badge-dot {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 3px solid #1a1a2e;
+            animation: dotPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes notificationPulse {
+            0%, 100% { box-shadow: 0 5px 25px rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 5px 40px rgba(34, 197, 94, 0.8); }
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .notification-badge.dismissed {
+            display: none;
+        }
+
+        /* Feedback Form */
+        .feedback-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background: #0d1117;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 12px;
+        }
+
+        .feedback-form textarea::placeholder {
+            color: #64748b;
+        }
+
+        .feedback-form textarea:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .btn-submit-feedback {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit-feedback:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-submit-feedback:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback-success {
+            color: #22c55e;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="celebration-overlay" id="celebrationOverlay"></div>
     <div class="completion-badge" id="completionBadge">PROJECT DELIVERED!</div>
+
+    <!-- Notification Badge (hidden by default) -->
+    <div class="notification-badge" id="notificationBadge" style="display: none;" onclick="scrollToReview()">
+        🎬
+        <div class="badge-dot"></div>
+    </div>
+
     <div class="bg-grid"></div>
     <div class="film-strip"></div>
     <div class="film-strip"></div>
@@ -544,9 +660,19 @@
                 <div class="review-icon">🎬</div>
                 <h3>Review Ready</h3>
                 <p>A new version is available for your review</p>
-                <a href="#" id="reviewButton" class="review-button" target="_blank">
+                <a href="#" id="reviewButton" class="review-button" target="_blank" onclick="markReviewAsViewed()">
                     Watch & Review
                 </a>
+
+                <div class="feedback-form">
+                    <textarea id="feedbackText" placeholder="Leave your feedback, notes, or approval here..."></textarea>
+                    <button class="btn-submit-feedback" id="submitFeedback" onclick="submitFeedback()">
+                        Send Feedback
+                    </button>
+                    <div class="feedback-success" id="feedbackSuccess" style="display: none;">
+                        Thank you! Your feedback has been sent.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -728,8 +854,68 @@
         function showReviewSection(link) {
             const reviewSection = document.getElementById('reviewSection');
             const reviewButton = document.getElementById('reviewButton');
+            const notificationBadge = document.getElementById('notificationBadge');
+
             reviewButton.href = link;
             reviewSection.style.display = 'block';
+
+            // Check if already viewed
+            const reviewKey = 'gn_review_' + (projectName || 'default');
+            const hasViewed = localStorage.getItem(reviewKey);
+
+            if (!hasViewed) {
+                // Show notification badge
+                notificationBadge.style.display = 'flex';
+            }
+        }
+
+        // Scroll to review section
+        function scrollToReview() {
+            const reviewSection = document.getElementById('reviewSection');
+            reviewSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Mark review as viewed
+        function markReviewAsViewed() {
+            const reviewKey = 'gn_review_' + (projectName || 'default');
+            localStorage.setItem(reviewKey, Date.now());
+            document.getElementById('notificationBadge').classList.add('dismissed');
+        }
+
+        // Submit feedback
+        async function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackText').value.trim();
+            if (!feedbackText) {
+                alert('Please enter your feedback');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitFeedback');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'feedback',
+                    project: projectName || 'Unknown',
+                    feedback: feedbackText,
+                    timestamp: new Date().toISOString()
+                });
+
+                await fetch(SHEETS_API + '?' + params.toString());
+
+                document.getElementById('feedbackSuccess').style.display = 'block';
+                document.getElementById('feedbackText').value = '';
+                submitBtn.textContent = 'Sent!';
+
+                // Also mark as viewed
+                markReviewAsViewed();
+
+            } catch (err) {
+                alert('Error sending feedback. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Feedback';
+            }
         }
 
         // Set project name if provided
