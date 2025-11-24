@@ -28,24 +28,28 @@
 
         .page-wrapper {
             display: flex;
-            gap: 30px;
-            max-width: 900px;
+            gap: 40px;
+            max-width: 1100px;
             margin: 0 auto;
+            justify-content: center;
         }
 
         .container {
-            flex: 1;
-            max-width: 400px;
+            flex: 0 1 450px;
         }
 
         /* Desktop feedback panel */
         .feedback-panel {
-            width: 320px;
+            width: 280px;
             flex-shrink: 0;
             display: none;
+            opacity: 0.9;
         }
 
         @media (min-width: 800px) {
+            .page-wrapper {
+                padding-left: 60px;
+            }
             .feedback-panel {
                 display: block;
             }
