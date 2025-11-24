@@ -86,48 +86,141 @@
             color: #475569;
         }
 
-        .slider-container {
+        .unified-slider {
             position: relative;
+            padding: 20px 0 50px 0;
         }
 
         .slider-value {
-            position: absolute;
-            right: 0;
-            top: -30px;
+            text-align: center;
             background: #f97316;
             color: #fff;
-            padding: 4px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .slider-track-container {
+            position: relative;
+            height: 50px;
+        }
+
+        .slider-track-bg {
+            position: absolute;
+            top: 24px;
+            left: 16px;
+            right: 16px;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .slider-track-fill {
+            position: absolute;
+            top: 24px;
+            left: 16px;
+            height: 6px;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            border-radius: 3px;
+            transition: width 0.15s ease;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
         }
 
         input[type="range"] {
+            position: absolute;
+            top: 12px;
+            left: 0;
             width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: #334155;
+            height: 30px;
+            background: transparent;
             outline: none;
             -webkit-appearance: none;
-            margin-top: 10px;
+            z-index: 10;
+            cursor: pointer;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #f97316, #fbbf24);
+            background: linear-gradient(135deg, #fff, #e2e8f0);
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 15px rgba(249, 115, 22, 0.4);
+            border: 3px solid #f97316;
         }
 
-        .progress-labels {
+        .milestone-icons {
+            position: absolute;
+            top: 10px;
+            left: 16px;
+            right: 16px;
             display: flex;
             justify-content: space-between;
-            margin-top: 8px;
+            pointer-events: none;
+        }
+
+        .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 5;
+        }
+
+        .milestone:hover {
+            transform: scale(1.15);
+        }
+
+        .milestone-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 2px solid #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s;
+            filter: grayscale(100%) opacity(0.5);
+        }
+
+        .milestone.passed .milestone-icon,
+        .milestone.active .milestone-icon {
+            border-color: #f97316;
+            background: #0d1117;
+            filter: grayscale(0%) opacity(1);
+        }
+
+        .milestone.active .milestone-icon {
+            border-color: #fbbf24;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+            transform: scale(1.1);
+        }
+
+        .milestone-label {
+            margin-top: 6px;
+            font-size: 0.6rem;
             color: #475569;
-            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: color 0.2s;
+        }
+
+        .milestone.passed .milestone-label,
+        .milestone.active .milestone-label {
+            color: #94a3b8;
+        }
+
+        .milestone.active .milestone-label {
+            color: #f97316;
         }
 
         .preview-box {
@@ -228,97 +321,6 @@
             font-size: 1.2rem;
         }
 
-        .timeline-track {
-            position: relative;
-            height: 70px;
-            margin-top: 25px;
-        }
-
-        .timeline-line {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #334155;
-            border-radius: 2px;
-        }
-
-        .timeline-progress {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #f97316, #fb923c);
-            border-radius: 2px;
-            transition: width 0.2s ease;
-            box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
-        }
-
-        .timeline-point {
-            position: absolute;
-            top: 0;
-            transform: translateX(-50%);
-            cursor: pointer;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .timeline-point:hover .point-icon {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(249, 115, 22, 0.6);
-        }
-
-        .point-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #1e293b;
-            border: 2px solid #475569;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            filter: grayscale(100%) opacity(0.5);
-        }
-
-        .timeline-point.passed .point-icon,
-        .timeline-point.active .point-icon {
-            border-color: #f97316;
-            background: #1a1a2e;
-            filter: grayscale(0%) opacity(1);
-        }
-
-        .timeline-point.active .point-icon {
-            border-color: #fbbf24;
-            box-shadow: 0 0 15px rgba(249, 115, 22, 0.6);
-            transform: scale(1.15);
-        }
-
-        .point-label {
-            margin-top: 8px;
-            font-size: 0.65rem;
-            color: #475569;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-
-        .timeline-point.passed .point-label,
-        .timeline-point.active .point-label {
-            color: #94a3b8;
-        }
-
-        .timeline-point.active .point-label {
-            color: #f97316;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -335,40 +337,37 @@
 
         <div class="form-group">
             <label>Progress</label>
-            <div class="slider-container">
+            <div class="unified-slider">
                 <span class="slider-value" id="sliderValue">50%</span>
-                <input type="range" id="progress" min="0" max="100" value="50">
-                <div class="progress-labels">
-                    <span>0%</span>
-                    <span>50%</span>
-                    <span>100%</span>
-                </div>
-                <div class="timeline-track">
-                    <div class="timeline-line"></div>
-                    <div class="timeline-progress" id="timelineProgress"></div>
-                    <div class="timeline-point" data-progress="20" style="left: 20%">
-                        <div class="point-icon">✂️</div>
-                        <span class="point-label">Edit</span>
-                    </div>
-                    <div class="timeline-point" data-progress="40" style="left: 40%">
-                        <div class="point-icon">🖥️</div>
-                        <span class="point-label">Online</span>
-                    </div>
-                    <div class="timeline-point" data-progress="60" style="left: 60%">
-                        <div class="point-icon">✨</div>
-                        <span class="point-label">VFX</span>
-                    </div>
-                    <div class="timeline-point" data-progress="80" style="left: 80%">
-                        <div class="point-icon">🔊</div>
-                        <span class="point-label">Sound</span>
-                    </div>
-                    <div class="timeline-point" data-progress="90" style="left: 90%">
-                        <div class="point-icon">🎨</div>
-                        <span class="point-label">Color</span>
-                    </div>
-                    <div class="timeline-point" data-progress="100" style="left: 100%">
-                        <div class="point-icon">✅</div>
-                        <span class="point-label">Final</span>
+                <div class="slider-track-container">
+                    <div class="slider-track-bg"></div>
+                    <div class="slider-track-fill" id="trackFill"></div>
+                    <input type="range" id="progress" min="0" max="100" value="50">
+                    <div class="milestone-icons">
+                        <div class="milestone" data-progress="0">
+                            <div class="milestone-icon">📥</div>
+                            <span class="milestone-label">Receive</span>
+                        </div>
+                        <div class="milestone" data-progress="20">
+                            <div class="milestone-icon">✂️</div>
+                            <span class="milestone-label">Edit</span>
+                        </div>
+                        <div class="milestone" data-progress="40">
+                            <div class="milestone-icon">✨</div>
+                            <span class="milestone-label">VFX</span>
+                        </div>
+                        <div class="milestone" data-progress="60">
+                            <div class="milestone-icon">🎨</div>
+                            <span class="milestone-label">Color</span>
+                        </div>
+                        <div class="milestone" data-progress="80">
+                            <div class="milestone-icon">🔊</div>
+                            <span class="milestone-label">Sound</span>
+                        </div>
+                        <div class="milestone" data-progress="100">
+                            <div class="milestone-icon">🚀</div>
+                            <span class="milestone-label">Delivery</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -477,44 +476,47 @@
         projectNameInput.addEventListener('input', updatePreview);
         progressSlider.addEventListener('input', () => {
             updatePreview();
-            updateTimeline();
+            updateMilestones();
         });
 
-        // Timeline functionality
-        const timelinePoints = document.querySelectorAll('.timeline-point');
-        const timelineProgress = document.getElementById('timelineProgress');
+        // Milestone functionality
+        const milestones = document.querySelectorAll('.milestone');
+        const trackFill = document.getElementById('trackFill');
 
-        function updateTimeline() {
+        function updateMilestones() {
             const currentProgress = parseInt(progressSlider.value);
+            const trackWidth = document.querySelector('.slider-track-bg').offsetWidth;
 
-            // Update progress bar
-            timelineProgress.style.width = currentProgress + '%';
+            // Update progress bar fill
+            trackFill.style.width = (currentProgress / 100 * trackWidth) + 'px';
 
-            // Update points
-            timelinePoints.forEach(point => {
-                const pointProgress = parseInt(point.dataset.progress);
-                point.classList.remove('passed', 'active');
+            // Update milestone states
+            milestones.forEach(m => {
+                const mProgress = parseInt(m.dataset.progress);
+                m.classList.remove('passed', 'active');
 
-                if (currentProgress > pointProgress) {
-                    point.classList.add('passed');
-                } else if (currentProgress === pointProgress) {
-                    point.classList.add('active');
+                if (currentProgress > mProgress) {
+                    m.classList.add('passed');
+                } else if (currentProgress === mProgress) {
+                    m.classList.add('active');
                 }
             });
         }
 
-        timelinePoints.forEach(point => {
-            point.addEventListener('click', () => {
-                const progress = point.dataset.progress;
-                progressSlider.value = progress;
+        milestones.forEach(m => {
+            m.addEventListener('click', () => {
+                progressSlider.value = m.dataset.progress;
                 updatePreview();
-                updateTimeline();
+                updateMilestones();
             });
         });
 
         // Initial preview
         updatePreview();
-        updateTimeline();
+        updateMilestones();
+
+        // Update on resize
+        window.addEventListener('resize', updateMilestones);
 
         // PWA Install prompt
         let deferredPrompt;
