@@ -300,9 +300,71 @@
         @keyframes fadeIn {
             to { opacity: 1; }
         }
+
+        /* Screen shake */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            will-change: transform, opacity;
+        }
+
+        /* Completion celebration */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+            z-index: 0;
+        }
+
+        .celebration-overlay.active {
+            opacity: 1;
+        }
+
+        .completion-badge {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 0 60px rgba(34, 197, 94, 0.5);
+            z-index: 1001;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .completion-badge.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
+    <div class="celebration-overlay" id="celebrationOverlay"></div>
+    <div class="completion-badge" id="completionBadge">PROJECT DELIVERED!</div>
     <div class="bg-grid"></div>
     <div class="film-strip"></div>
     <div class="film-strip"></div>
@@ -357,7 +419,107 @@
     <div class="footer">POST PRODUCTION STUDIO</div>
 
     <script>
-        const SHEETS_API = 'https://script.google.com/macros/s/AKfycbyQpWt4wtBaXG6TC8_siGnupbePr0Ju7RqVYJ_ADS7JImGojEM0X1wAYEWJqwQNyIopKg/exec';
+        const SHEETS_API = 'https://script.google.com/macros/s/AKfycbxLsN2Np9uaBXkjfXA7pu_7sJbwQ-lk44lX9yQ4PgMbvMgNK4jEMRXT5skCW7dfPA6avA/exec';
+
+        // Audio context for sound effects
+        let audioCtx = null;
+        function playPopSound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playSuccessSound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.3);
+                osc.start(audioCtx.currentTime + i * 0.1);
+                osc.stop(audioCtx.currentTime + i * 0.1 + 0.3);
+            });
+        }
+
+        // Screen shake
+        function shakeScreen() {
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+        }
+
+        // Confetti explosion
+        function createConfetti() {
+            const colors = ['#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#ec4899', '#8b5cf6'];
+            const confettiCount = 150;
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-20px';
+                confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+                document.body.appendChild(confetti);
+
+                let posY = -20;
+                let posX = parseFloat(confetti.style.left);
+                let velY = Math.random() * 3 + 2;
+                let velX = (Math.random() - 0.5) * 4;
+                let rotation = 0;
+                let rotSpeed = (Math.random() - 0.5) * 10;
+
+                function animateConfetti() {
+                    velY += 0.1; // gravity
+                    posY += velY;
+                    posX += velX;
+                    rotation += rotSpeed;
+
+                    confetti.style.transform = `translateY(${posY}px) translateX(${velX * 50}px) rotate(${rotation}deg)`;
+
+                    if (posY < window.innerHeight + 50) {
+                        requestAnimationFrame(animateConfetti);
+                    } else {
+                        confetti.remove();
+                    }
+                }
+
+                setTimeout(() => requestAnimationFrame(animateConfetti), Math.random() * 1000);
+            }
+        }
+
+        // Celebration for 100% completion
+        function celebrate() {
+            const overlay = document.getElementById('celebrationOverlay');
+            const badge = document.getElementById('completionBadge');
+
+            overlay.classList.add('active');
+            createConfetti();
+            playSuccessSound();
+
+            setTimeout(() => {
+                badge.classList.add('show');
+            }, 500);
+
+            setTimeout(() => {
+                badge.classList.remove('show');
+                overlay.classList.remove('active');
+            }, 4000);
+        }
 
         // Read URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -450,6 +612,11 @@
 
             // Update status message
             statusMessageEl.textContent = getStatusMessage(percent);
+
+            // Celebrate at 100%
+            if (percent >= 100) {
+                setTimeout(celebrate, 800);
+            }
         }
 
 
@@ -559,11 +726,15 @@
         progressBar.addEventListener('click', (e) => {
             createParticles(e.clientX, e.clientY);
             createRipple(e, progressBar);
+            playPopSound();
+            shakeScreen();
         });
 
         indicator.addEventListener('click', (e) => {
             e.stopPropagation();
             createParticles(e.clientX, e.clientY);
+            playPopSound();
+            shakeScreen();
         });
 
         document.getElementById('clickMe').addEventListener('click', () => {
@@ -571,6 +742,8 @@
             const x = rect.left + rect.width * (targetProgress / 100);
             const y = rect.top + rect.height / 2;
             createParticles(x, y);
+            playPopSound();
+            shakeScreen();
         });
     </script>
 </body>
