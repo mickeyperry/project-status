@@ -366,6 +366,52 @@
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
         }
+
+        /* Troll features */
+        .view-counter {
+            color: #334155;
+            font-size: 0.7rem;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .troll-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.4);
+            z-index: 1002;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: center;
+            max-width: 90vw;
+        }
+
+        .troll-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .troll-message.warning {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .progress-backward {
+            animation: shakeProgress 0.5s ease;
+        }
+
+        @keyframes shakeProgress {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
     </style>
 </head>
 <body>
@@ -417,9 +463,12 @@
             </div>
         </div>
 
-        <p class="coffee-message">"We promise it's worth the wait. Grab a coffee."</p>
+        <p class="coffee-message" id="coffeeMessage">"We promise it's worth the wait. Grab a coffee."</p>
 
         <p class="click-hint">Feeling impatient? <span id="clickMe">Click the bar</span> to send good vibes</p>
+
+        <div class="view-counter" id="viewCounter"></div>
+        <div class="troll-message" id="trollMessage"></div>
     </div>
 
     <div class="footer">POST PRODUCTION STUDIO</div>
@@ -776,6 +825,126 @@
             playPopSound();
             shakeScreen();
         });
+
+        // ==========================================
+        // TROLL FEATURES FOR IMPATIENT PRODUCERS
+        // ==========================================
+
+        const trollMessages = [
+            "Checking again? Still cooking! 🍳",
+            "Refreshing won't make it faster... 😏",
+            "We see you checking... patience is a virtue! 🧘",
+            "Again? Really? We're working on it! 💪",
+            "5th time? Grab a coffee already! ☕",
+            "Progress just went backward because you checked too much! 😈",
+            "Our render farm felt that refresh... it's crying now 😢",
+            "Every refresh adds 1 minute to the deadline 🤫",
+            "Stop. Refreshing. We're. On. It. 🛑",
+            "You're our most impatient client today! 🏆"
+        ];
+
+        const coffeeMessages = [
+            '"We promise it\'s worth the wait. Grab a coffee."',
+            '"Still here? Get a second coffee."',
+            '"You again? Try a walk outside."',
+            '"At this point, learn a new hobby."',
+            '"Have you considered meditation?"',
+            '"Your refresh key must be worn out by now."'
+        ];
+
+        function getTrollData() {
+            const key = 'gn_troll_' + (projectName || 'default');
+            const data = JSON.parse(localStorage.getItem(key) || '{}');
+            return {
+                views: data.views || 0,
+                lastVisit: data.lastVisit || 0,
+                progressPenalty: data.progressPenalty || 0
+            };
+        }
+
+        function setTrollData(data) {
+            const key = 'gn_troll_' + (projectName || 'default');
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function showTrollMessage(msg, isWarning = false) {
+            const trollEl = document.getElementById('trollMessage');
+            trollEl.textContent = msg;
+            trollEl.className = 'troll-message' + (isWarning ? ' warning' : '');
+            trollEl.classList.add('show');
+            setTimeout(() => trollEl.classList.remove('show'), 4000);
+        }
+
+        function updateViewCounter(views) {
+            const counterEl = document.getElementById('viewCounter');
+            if (views > 2) {
+                counterEl.textContent = `You've checked this page ${views} times 👀`;
+            }
+        }
+
+        function updateCoffeeMessage(views) {
+            const coffeeEl = document.getElementById('coffeeMessage');
+            const msgIndex = Math.min(views - 1, coffeeMessages.length - 1);
+            if (views > 0 && msgIndex >= 0) {
+                coffeeEl.textContent = coffeeMessages[msgIndex];
+            }
+        }
+
+        function applyTrollLogic() {
+            if (!projectName) return; // Only troll for actual projects
+
+            const data = getTrollData();
+            const now = Date.now();
+            const timeSinceLastVisit = now - data.lastVisit;
+            const isQuickRefresh = timeSinceLastVisit < 30000; // Less than 30 seconds
+
+            data.views++;
+            data.lastVisit = now;
+
+            // Quick refresh penalty
+            if (isQuickRefresh && data.views > 2) {
+                data.progressPenalty = Math.min(data.progressPenalty + 2, 15); // Max 15% penalty
+            }
+
+            setTrollData(data);
+
+            // Show view counter
+            updateViewCounter(data.views);
+
+            // Update coffee message based on views
+            updateCoffeeMessage(data.views);
+
+            // Show troll messages at certain thresholds
+            if (data.views === 3) {
+                setTimeout(() => showTrollMessage(trollMessages[0], true), 2000);
+            } else if (data.views === 5) {
+                setTimeout(() => showTrollMessage(trollMessages[4], true), 2000);
+            } else if (data.views === 7) {
+                setTimeout(() => showTrollMessage(trollMessages[2], false), 2000);
+            } else if (data.views >= 10 && isQuickRefresh) {
+                setTimeout(() => showTrollMessage(trollMessages[5], false), 2000);
+                // Apply backward progress animation
+                progressBar.classList.add('progress-backward');
+                setTimeout(() => progressBar.classList.remove('progress-backward'), 500);
+            } else if (data.views > 10 && Math.random() < 0.5) {
+                const randomMsg = trollMessages[Math.floor(Math.random() * trollMessages.length)];
+                setTimeout(() => showTrollMessage(randomMsg, Math.random() < 0.5), 2000);
+            }
+
+            // Apply progress penalty (visual only, doesn't affect actual progress)
+            if (data.progressPenalty > 0 && targetProgress > 10) {
+                const penalizedProgress = Math.max(5, targetProgress - data.progressPenalty);
+                setTimeout(() => {
+                    if (penalizedProgress < targetProgress) {
+                        setProgress(penalizedProgress);
+                        setTimeout(() => setProgress(targetProgress), 3000); // Restore after 3s
+                    }
+                }, 1500);
+            }
+        }
+
+        // Apply troll logic after page loads
+        setTimeout(applyTrollLogic, 1000);
     </script>
 </body>
 </html>
