@@ -26,9 +26,44 @@
             padding-top: env(safe-area-inset-top, 20px);
         }
 
-        .container {
-            max-width: 400px;
+        .page-wrapper {
+            display: flex;
+            gap: 30px;
+            max-width: 900px;
             margin: 0 auto;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        /* Desktop feedback panel */
+        .feedback-panel {
+            width: 320px;
+            flex-shrink: 0;
+            display: none;
+        }
+
+        @media (min-width: 800px) {
+            .feedback-panel {
+                display: block;
+            }
+            .mobile-feedback-toggle {
+                display: none !important;
+            }
+            .feedback-section {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 799px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            .container {
+                max-width: 100%;
+            }
         }
 
         .logo {
@@ -476,11 +511,82 @@
             text-align: center;
         }
 
-        /* Feedback Section */
+        /* Mobile Feedback Toggle */
+        .mobile-feedback-toggle {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mobile-feedback-toggle:hover {
+            border-color: #f97316;
+        }
+
+        .mobile-feedback-toggle span {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .mobile-feedback-toggle .badge {
+            background: #f97316;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .mobile-feedback-toggle .arrow {
+            color: #64748b;
+            transition: transform 0.3s;
+        }
+
+        .mobile-feedback-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Feedback Section (Mobile) */
         .feedback-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #334155;
+            margin-top: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .feedback-section.open {
+            max-height: 2000px;
+        }
+
+        /* Feedback Panel (Desktop) */
+        .feedback-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .feedback-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feedback-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .feedback-panel::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
         }
 
         .feedback-header {
@@ -494,6 +600,17 @@
             color: #94a3b8;
             font-size: 0.9rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-count {
+            background: #f97316;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
         }
 
         .btn-refresh {
@@ -504,6 +621,11 @@
             border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-refresh:hover {
+            background: #475569;
         }
 
         .feedback-list {
@@ -517,11 +639,11 @@
             border: 1px solid #334155;
             border-radius: 12px;
             padding: 15px;
+            transition: all 0.2s;
         }
 
-        .feedback-item.unread {
-            border-color: #22c55e;
-            background: rgba(34, 197, 94, 0.05);
+        .feedback-item:hover {
+            border-color: #475569;
         }
 
         .feedback-meta {
@@ -556,6 +678,7 @@
     </style>
 </head>
 <body>
+    <div class="page-wrapper">
     <div class="container">
         <div class="logo">
             <h1>GROSSMAN <span>NORTH</span></h1>
@@ -657,16 +780,33 @@
             <button class="btn-share" id="shareBtn">Share</button>
         </div>
 
-        <!-- Client Feedback Section -->
-        <div class="feedback-section">
-            <div class="feedback-header">
-                <h3>Client Feedback</h3>
-                <button class="btn-refresh" id="refreshFeedback">Refresh</button>
+        <!-- Mobile Feedback Toggle -->
+        <div class="mobile-feedback-toggle" id="mobileFeedbackToggle">
+            <span>Client Feedback</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge" id="feedbackBadge">0</span>
+                <span class="arrow">▼</span>
             </div>
-            <div class="feedback-list" id="feedbackList">
+        </div>
+
+        <!-- Mobile Feedback Section (collapsible) -->
+        <div class="feedback-section" id="mobileFeedbackSection">
+            <div class="feedback-list" id="mobileFeedbackList">
                 <div class="no-feedback">Loading feedback...</div>
             </div>
         </div>
+    </div>
+
+    <!-- Desktop Feedback Panel -->
+    <div class="feedback-panel">
+        <div class="feedback-header">
+            <h3>Client Feedback <span class="feedback-count" id="desktopFeedbackCount">0</span></h3>
+            <button class="btn-refresh" id="refreshFeedback">Refresh</button>
+        </div>
+        <div class="feedback-list" id="feedbackList">
+            <div class="no-feedback">Loading feedback...</div>
+        </div>
+    </div>
     </div>
 
     <div class="toast" id="toast">Link copied!</div>
@@ -1038,42 +1178,70 @@
 
         // Load and display feedback
         const feedbackList = document.getElementById('feedbackList');
+        const mobileFeedbackList = document.getElementById('mobileFeedbackList');
         const refreshFeedbackBtn = document.getElementById('refreshFeedback');
+        const feedbackBadge = document.getElementById('feedbackBadge');
+        const desktopFeedbackCount = document.getElementById('desktopFeedbackCount');
+        const mobileFeedbackToggle = document.getElementById('mobileFeedbackToggle');
+        const mobileFeedbackSection = document.getElementById('mobileFeedbackSection');
+
+        // Mobile toggle
+        mobileFeedbackToggle.addEventListener('click', () => {
+            mobileFeedbackToggle.classList.toggle('open');
+            mobileFeedbackSection.classList.toggle('open');
+        });
+
+        function createFeedbackItem(f) {
+            const item = document.createElement('div');
+            item.className = 'feedback-item';
+
+            // Format timestamp
+            let timeStr = 'Unknown';
+            if (f.timestamp) {
+                const date = new Date(f.timestamp);
+                timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+
+            item.innerHTML = `
+                <div class="feedback-meta">
+                    <span class="feedback-project">${f.project || 'Unknown'}</span>
+                    <span class="feedback-time">${timeStr}</span>
+                </div>
+                <div class="feedback-text">${f.feedback || ''}</div>
+            `;
+            return item;
+        }
 
         async function loadFeedback() {
             try {
                 feedbackList.innerHTML = '<div class="no-feedback">Loading...</div>';
+                mobileFeedbackList.innerHTML = '<div class="no-feedback">Loading...</div>';
+
                 const response = await fetch(SHEETS_API + '?action=getFeedback');
                 const data = await response.json();
 
                 if (data.success && data.feedback && data.feedback.length > 0) {
                     feedbackList.innerHTML = '';
+                    mobileFeedbackList.innerHTML = '';
+
+                    // Update counts
+                    feedbackBadge.textContent = data.feedback.length;
+                    desktopFeedbackCount.textContent = data.feedback.length;
+
                     data.feedback.forEach(f => {
-                        const item = document.createElement('div');
-                        item.className = 'feedback-item';
-
-                        // Format timestamp
-                        let timeStr = 'Unknown';
-                        if (f.timestamp) {
-                            const date = new Date(f.timestamp);
-                            timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        }
-
-                        item.innerHTML = `
-                            <div class="feedback-meta">
-                                <span class="feedback-project">${f.project || 'Unknown'}</span>
-                                <span class="feedback-time">${timeStr}</span>
-                            </div>
-                            <div class="feedback-text">${f.feedback || ''}</div>
-                        `;
-                        feedbackList.appendChild(item);
+                        feedbackList.appendChild(createFeedbackItem(f));
+                        mobileFeedbackList.appendChild(createFeedbackItem(f));
                     });
                 } else {
                     feedbackList.innerHTML = '<div class="no-feedback">No feedback yet</div>';
+                    mobileFeedbackList.innerHTML = '<div class="no-feedback">No feedback yet</div>';
+                    feedbackBadge.textContent = '0';
+                    desktopFeedbackCount.textContent = '0';
                 }
             } catch (err) {
                 console.error('Error loading feedback:', err);
                 feedbackList.innerHTML = '<div class="no-feedback">Could not load feedback</div>';
+                mobileFeedbackList.innerHTML = '<div class="no-feedback">Could not load feedback</div>';
             }
         }
 
