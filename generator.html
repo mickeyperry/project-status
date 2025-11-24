@@ -418,6 +418,64 @@
             letter-spacing: 1px;
         }
 
+        /* Color picker */
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* QR Code */
+        .qr-container {
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .qr-container img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .qr-wrapper {
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -478,9 +536,33 @@
         </div>
 
         <div class="form-group">
+            <label>Theme Color</label>
+            <div class="color-picker" id="colorPicker">
+                <div class="color-option selected" data-color="orange" style="background: #f97316;"></div>
+                <div class="color-option" data-color="blue" style="background: #3b82f6;"></div>
+                <div class="color-option" data-color="green" style="background: #22c55e;"></div>
+                <div class="color-option" data-color="purple" style="background: #8b5cf6;"></div>
+                <div class="color-option" data-color="pink" style="background: #ec4899;"></div>
+                <div class="color-option" data-color="red" style="background: #ef4444;"></div>
+                <div class="color-option" data-color="cyan" style="background: #06b6d4;"></div>
+                <div class="color-option" data-color="yellow" style="background: #eab308;"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
             <label>Client Link</label>
             <div class="section-label">Share this with your client</div>
             <div class="client-link" id="clientLink">Enter a project name above...</div>
+        </div>
+
+        <div class="form-group">
+            <label>QR Code</label>
+            <div class="section-label">Scan to view project status</div>
+            <div class="qr-wrapper">
+                <div class="qr-container" id="qrContainer">
+                    <img id="qrCode" src="" alt="QR Code">
+                </div>
+            </div>
         </div>
 
         <div class="buttons">
@@ -518,6 +600,9 @@
 
         const baseUrl = 'https://mickeyperry.github.io/project-status/';
         const stages = ['Receive', 'Edit', 'VFX', 'Color', 'Sound', 'Delivery'];
+        let selectedColor = 'orange';
+        const qrCode = document.getElementById('qrCode');
+        const colorOptions = document.querySelectorAll('.color-option');
 
         function getStageFromProgress(progress) {
             if (progress >= 100) return 'Delivery';
@@ -534,18 +619,40 @@
 
             if (!name) {
                 clientLink.textContent = 'Enter a project name above...';
+                qrCode.src = '';
                 return;
             }
 
-            const encodedName = encodeURIComponent(name);
-            clientLink.textContent = baseUrl + '?project=' + encodedName;
+            const link = getLink();
+            clientLink.textContent = link;
+            updateQRCode(link);
         }
 
         function getLink() {
             const name = projectNameInput.value.trim();
             if (!name) return baseUrl;
-            return baseUrl + '?project=' + encodeURIComponent(name);
+            let link = baseUrl + '?project=' + encodeURIComponent(name);
+            if (selectedColor !== 'orange') {
+                link += '&color=' + selectedColor;
+            }
+            return link;
         }
+
+        function updateQRCode(url) {
+            const qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(url);
+            qrCode.src = qrApiUrl;
+        }
+
+        // Color picker handlers
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                colorOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedColor = option.dataset.color;
+                updateClientLink();
+                setStatus('draft');
+            });
+        });
 
         function setStatus(status) {
             statusBadge.className = 'status-badge ' + status;
