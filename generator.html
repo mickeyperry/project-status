@@ -674,8 +674,8 @@
                     projectSelect.innerHTML = '<option value="">-- New Project --</option>';
                     data.projects.forEach(p => {
                         const option = document.createElement('option');
-                        option.value = p;
-                        option.textContent = p;
+                        option.value = p.project;
+                        option.textContent = p.project + ' (' + p.progress + '%)';
                         projectSelect.appendChild(option);
                     });
                 }
