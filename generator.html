@@ -476,6 +476,83 @@
             text-align: center;
         }
 
+        /* Feedback Section */
+        .feedback-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .feedback-header h3 {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-refresh {
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .feedback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feedback-item {
+            background: #0d1117;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .feedback-item.unread {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .feedback-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+        }
+
+        .feedback-project {
+            color: #f97316;
+            font-weight: 600;
+        }
+
+        .feedback-time {
+            color: #64748b;
+        }
+
+        .feedback-text {
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .no-feedback {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 20px;
+        }
+
     </style>
 </head>
 <body>
@@ -578,6 +655,17 @@
         <div class="buttons" style="margin-top: 12px;">
             <button class="btn-copy" id="copyBtn">Copy Link</button>
             <button class="btn-share" id="shareBtn">Share</button>
+        </div>
+
+        <!-- Client Feedback Section -->
+        <div class="feedback-section">
+            <div class="feedback-header">
+                <h3>Client Feedback</h3>
+                <button class="btn-refresh" id="refreshFeedback">Refresh</button>
+            </div>
+            <div class="feedback-list" id="feedbackList">
+                <div class="no-feedback">Loading feedback...</div>
+            </div>
         </div>
     </div>
 
@@ -947,6 +1035,52 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {});
         }
+
+        // Load and display feedback
+        const feedbackList = document.getElementById('feedbackList');
+        const refreshFeedbackBtn = document.getElementById('refreshFeedback');
+
+        async function loadFeedback() {
+            try {
+                feedbackList.innerHTML = '<div class="no-feedback">Loading...</div>';
+                const response = await fetch(SHEETS_API + '?action=getFeedback');
+                const data = await response.json();
+
+                if (data.success && data.feedback && data.feedback.length > 0) {
+                    feedbackList.innerHTML = '';
+                    data.feedback.forEach(f => {
+                        const item = document.createElement('div');
+                        item.className = 'feedback-item';
+
+                        // Format timestamp
+                        let timeStr = 'Unknown';
+                        if (f.timestamp) {
+                            const date = new Date(f.timestamp);
+                            timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        }
+
+                        item.innerHTML = `
+                            <div class="feedback-meta">
+                                <span class="feedback-project">${f.project || 'Unknown'}</span>
+                                <span class="feedback-time">${timeStr}</span>
+                            </div>
+                            <div class="feedback-text">${f.feedback || ''}</div>
+                        `;
+                        feedbackList.appendChild(item);
+                    });
+                } else {
+                    feedbackList.innerHTML = '<div class="no-feedback">No feedback yet</div>';
+                }
+            } catch (err) {
+                console.error('Error loading feedback:', err);
+                feedbackList.innerHTML = '<div class="no-feedback">Could not load feedback</div>';
+            }
+        }
+
+        refreshFeedbackBtn.addEventListener('click', loadFeedback);
+
+        // Load feedback on page load
+        loadFeedback();
     </script>
 </body>
 </html>
