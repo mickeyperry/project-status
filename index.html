@@ -412,6 +412,74 @@
             20%, 60% { transform: translateX(-10px); }
             40%, 80% { transform: translateX(10px); }
         }
+
+        /* Review Section */
+        .review-section {
+            margin-top: 40px;
+            animation: fadeSlideUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .review-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .review-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .review-card h3 {
+            color: #22c55e;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .review-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .review-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            text-decoration: none;
+            padding: 14px 35px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .review-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.5);
+        }
+
+        .review-button:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -469,6 +537,18 @@
 
         <div class="view-counter" id="viewCounter"></div>
         <div class="troll-message" id="trollMessage"></div>
+
+        <!-- Review Section -->
+        <div class="review-section" id="reviewSection" style="display: none;">
+            <div class="review-card">
+                <div class="review-icon">🎬</div>
+                <h3>Review Ready</h3>
+                <p>A new version is available for your review</p>
+                <a href="#" id="reviewButton" class="review-button" target="_blank">
+                    Watch & Review
+                </a>
+            </div>
+        </div>
     </div>
 
     <div class="footer">POST PRODUCTION STUDIO</div>
@@ -624,6 +704,17 @@
                     targetProgress = parseInt(data.progress) || 0;
                     projectNameEl.textContent = data.project;
                     document.title = `${data.project} | Grossman North`;
+
+                    // Apply color theme if saved
+                    if (data.color && colorThemes[data.color]) {
+                        applyColorTheme(data.color);
+                    }
+
+                    // Show review section if there's a review link
+                    if (data.reviewLink && data.reviewLink.trim()) {
+                        showReviewSection(data.reviewLink);
+                    }
+
                     setProgress(targetProgress);
                     return true;
                 }
@@ -631,6 +722,14 @@
                 console.log('Could not load from sheets, using URL params');
             }
             return false;
+        }
+
+        // Show review section
+        function showReviewSection(link) {
+            const reviewSection = document.getElementById('reviewSection');
+            const reviewButton = document.getElementById('reviewButton');
+            reviewButton.href = link;
+            reviewSection.style.display = 'block';
         }
 
         // Set project name if provided

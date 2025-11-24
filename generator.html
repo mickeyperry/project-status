@@ -536,6 +536,11 @@
         </div>
 
         <div class="form-group">
+            <label>Review Link <span style="color: #64748b; font-weight: normal;">(optional)</span></label>
+            <input type="text" id="reviewLink" placeholder="Dropbox, Google Drive, Frame.io link...">
+        </div>
+
+        <div class="form-group">
             <label>Theme Color</label>
             <div class="color-picker" id="colorPicker">
                 <div class="color-option selected" data-color="orange" style="background: #f97316;"></div>
@@ -603,6 +608,7 @@
         let selectedColor = 'orange';
         const qrCode = document.getElementById('qrCode');
         const colorOptions = document.querySelectorAll('.color-option');
+        const reviewLinkInput = document.getElementById('reviewLink');
 
         function getStageFromProgress(progress) {
             if (progress >= 100) return 'Delivery';
@@ -686,6 +692,14 @@
                 if (data.success) {
                     projectNameInput.value = data.project;
                     progressSlider.value = data.progress || 0;
+                    reviewLinkInput.value = data.reviewLink || '';
+                    // Set color if saved
+                    if (data.color) {
+                        selectedColor = data.color;
+                        colorOptions.forEach(o => {
+                            o.classList.toggle('selected', o.dataset.color === data.color);
+                        });
+                    }
                     updateClientLink();
                     updateMilestones();
                     setStatus('saved');
@@ -711,7 +725,9 @@
                     action: 'save',
                     project: name,
                     progress: progressSlider.value,
-                    stage: getStageFromProgress(parseInt(progressSlider.value))
+                    stage: getStageFromProgress(parseInt(progressSlider.value)),
+                    color: selectedColor,
+                    reviewLink: reviewLinkInput.value.trim()
                 });
 
                 const response = await fetch(SHEETS_API + '?' + params.toString());
