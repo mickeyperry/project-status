@@ -450,10 +450,12 @@
             background: #000;
         }
 
-        .video-embed iframe {
+        .video-embed iframe,
+        .video-embed video {
             width: 100%;
             aspect-ratio: 16/9;
             border: none;
+            border-radius: 8px;
         }
 
         .review-icon {
@@ -680,6 +682,7 @@
                 <!-- Video Embed -->
                 <div class="video-embed" id="videoEmbed" style="display: none;">
                     <iframe id="videoFrame" src="" allowfullscreen></iframe>
+                    <video id="videoPlayer" controls playsinline style="display: none; width: 100%;"></video>
                 </div>
 
                 <a href="#" id="reviewButton" class="review-button" target="_blank" onclick="markReviewAsViewed()">
@@ -874,22 +877,30 @@
 
         // Convert URL to embeddable format
         function getEmbedUrl(url) {
-            // Dropbox
+            // Dropbox - convert to direct download URL for video playback
             if (url.includes('dropbox.com')) {
-                return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+                // Convert share link to direct link format
+                // www.dropbox.com -> dl.dropboxusercontent.com
+                let embedUrl = url
+                    .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+                    .replace('?dl=0', '')
+                    .replace('?dl=1', '')
+                    .replace('&dl=0', '')
+                    .replace('&dl=1', '');
+                return { type: 'video', url: embedUrl };
             }
             // Google Drive
             if (url.includes('drive.google.com')) {
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                 if (match) {
-                    return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+                    return { type: 'iframe', url: 'https://drive.google.com/file/d/' + match[1] + '/preview' };
                 }
             }
             // Vimeo
             if (url.includes('vimeo.com')) {
                 const match = url.match(/vimeo\.com\/(\d+)/);
                 if (match) {
-                    return 'https://player.vimeo.com/video/' + match[1];
+                    return { type: 'iframe', url: 'https://player.vimeo.com/video/' + match[1] };
                 }
             }
             // YouTube
@@ -901,10 +912,10 @@
                     videoId = url.split('v=')[1]?.split('&')[0];
                 }
                 if (videoId) {
-                    return 'https://www.youtube.com/embed/' + videoId;
+                    return { type: 'iframe', url: 'https://www.youtube.com/embed/' + videoId };
                 }
             }
-            // Frame.io - just use direct link
+            // Frame.io or other - no embed
             return null;
         }
 
@@ -915,14 +926,25 @@
             const notificationBadge = document.getElementById('notificationBadge');
             const videoEmbed = document.getElementById('videoEmbed');
             const videoFrame = document.getElementById('videoFrame');
+            const videoPlayer = document.getElementById('videoPlayer');
 
             reviewButton.href = link;
             reviewSection.style.display = 'block';
 
             // Try to embed the video
-            const embedUrl = getEmbedUrl(link);
-            if (embedUrl) {
-                videoFrame.src = embedUrl;
+            const embedData = getEmbedUrl(link);
+            if (embedData) {
+                if (embedData.type === 'video') {
+                    // Use HTML5 video player for Dropbox
+                    videoPlayer.src = embedData.url;
+                    videoPlayer.style.display = 'block';
+                    videoFrame.style.display = 'none';
+                } else {
+                    // Use iframe for YouTube, Vimeo, Google Drive
+                    videoFrame.src = embedData.url;
+                    videoFrame.style.display = 'block';
+                    videoPlayer.style.display = 'none';
+                }
                 videoEmbed.style.display = 'block';
             }
 
