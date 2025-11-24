@@ -438,14 +438,30 @@
             border-radius: 20px;
             padding: 30px;
             text-align: center;
-            max-width: 350px;
+            max-width: 700px;
+            width: 90vw;
             margin: 0 auto;
+        }
+
+        .video-embed {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .video-embed iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
         }
 
         .review-icon {
             font-size: 3rem;
             margin-bottom: 15px;
-            animation: pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .review-card h3 {
@@ -660,8 +676,14 @@
                 <div class="review-icon">🎬</div>
                 <h3>Review Ready</h3>
                 <p>A new version is available for your review</p>
+
+                <!-- Video Embed -->
+                <div class="video-embed" id="videoEmbed" style="display: none;">
+                    <iframe id="videoFrame" src="" allowfullscreen></iframe>
+                </div>
+
                 <a href="#" id="reviewButton" class="review-button" target="_blank" onclick="markReviewAsViewed()">
-                    Watch & Review
+                    Open Full Screen
                 </a>
 
                 <div class="feedback-form">
@@ -850,14 +872,59 @@
             return false;
         }
 
+        // Convert URL to embeddable format
+        function getEmbedUrl(url) {
+            // Dropbox
+            if (url.includes('dropbox.com')) {
+                return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+            }
+            // Google Drive
+            if (url.includes('drive.google.com')) {
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match) {
+                    return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+                }
+            }
+            // Vimeo
+            if (url.includes('vimeo.com')) {
+                const match = url.match(/vimeo\.com\/(\d+)/);
+                if (match) {
+                    return 'https://player.vimeo.com/video/' + match[1];
+                }
+            }
+            // YouTube
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                let videoId = '';
+                if (url.includes('youtu.be')) {
+                    videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                } else {
+                    videoId = url.split('v=')[1]?.split('&')[0];
+                }
+                if (videoId) {
+                    return 'https://www.youtube.com/embed/' + videoId;
+                }
+            }
+            // Frame.io - just use direct link
+            return null;
+        }
+
         // Show review section
         function showReviewSection(link) {
             const reviewSection = document.getElementById('reviewSection');
             const reviewButton = document.getElementById('reviewButton');
             const notificationBadge = document.getElementById('notificationBadge');
+            const videoEmbed = document.getElementById('videoEmbed');
+            const videoFrame = document.getElementById('videoFrame');
 
             reviewButton.href = link;
             reviewSection.style.display = 'block';
+
+            // Try to embed the video
+            const embedUrl = getEmbedUrl(link);
+            if (embedUrl) {
+                videoFrame.src = embedUrl;
+                videoEmbed.style.display = 'block';
+            }
 
             // Check if already viewed
             const reviewKey = 'gn_review_' + (projectName || 'default');
@@ -867,6 +934,9 @@
                 // Show notification badge
                 notificationBadge.style.display = 'flex';
             }
+
+            // Mark as viewed when video loads
+            markReviewAsViewed();
         }
 
         // Scroll to review section
