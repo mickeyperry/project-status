@@ -668,19 +668,25 @@
         // Load projects list
         async function loadProjects() {
             try {
+                console.log('Loading projects from API...');
                 const response = await fetch(SHEETS_API + '?action=list');
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('API response:', data);
                 if (data.success && data.projects) {
                     projectSelect.innerHTML = '<option value="">-- New Project --</option>';
                     data.projects.forEach(p => {
+                        console.log('Adding project:', p.project);
                         const option = document.createElement('option');
                         option.value = p.project;
                         option.textContent = p.project + ' (' + p.progress + '%)';
                         projectSelect.appendChild(option);
                     });
+                } else {
+                    console.log('No projects or success=false');
                 }
             } catch (err) {
-                console.log('Could not load projects');
+                console.error('Error loading projects:', err);
             }
         }
 
