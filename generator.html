@@ -156,14 +156,14 @@
         .milestone-icons {
             position: absolute;
             top: 10px;
-            left: 16px;
-            right: 16px;
-            display: flex;
-            justify-content: space-between;
+            left: 0;
+            right: 0;
             pointer-events: none;
         }
 
         .milestone {
+            position: absolute;
+            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -174,8 +174,17 @@
         }
 
         .milestone:hover {
-            transform: scale(1.15);
+            transform: translateX(-50%) scale(1.15);
         }
+
+        .milestone[data-progress="0"] { left: 0%; transform: translateX(0); }
+        .milestone[data-progress="0"]:hover { transform: translateX(0) scale(1.15); }
+        .milestone[data-progress="20"] { left: 20%; }
+        .milestone[data-progress="40"] { left: 40%; }
+        .milestone[data-progress="60"] { left: 60%; }
+        .milestone[data-progress="80"] { left: 80%; }
+        .milestone[data-progress="100"] { left: 100%; transform: translateX(-100%); }
+        .milestone[data-progress="100"]:hover { transform: translateX(-100%) scale(1.15); }
 
         .milestone-icon {
             width: 34px;
